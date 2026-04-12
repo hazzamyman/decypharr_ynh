@@ -1,0 +1,87 @@
+packaging_format = 2
+
+id = "decypharr"
+name = "Decypharr"
+description.en = "Debrid client with qBittorrent API, WebDAV, and *arr integration"
+description.fr = "Client Debrid avec API qBittorrent, WebDAV, et intégration *arr"
+
+version = "2.0~ynh1"
+
+maintainers = ["hazzamyman"]
+
+[upstream]
+license = "MIT"
+website = "https://docs.decypharr.com"
+admindoc = "https://docs.decypharr.com/guides/configuration"
+code = "https://github.com/sirrobot01/decypharr"
+
+[integration]
+yunohost = ">= 11.2"
+architectures = ["amd64", "arm64"]
+multi_instance = false
+ldap = "not_relevant"
+sso = "not_relevant"
+disk = "200M"
+ram.build = "50M"
+ram.runtime = "200M"
+
+[install]
+
+    [install.domain]
+    type = "domain"
+
+    [install.init_main_permission]
+    type = "group"
+    default = "admins"
+
+    [install.use_case]
+    ask.en = "What will you use Decypharr for?"
+    ask.fr = "Pour quoi allez-vous utiliser Decypharr ?"
+    type = "select"
+    choices = ["streaming", "downloading"]
+    default = "streaming"
+    help.en = "Streaming: mounts a virtual filesystem for direct playback (recommended for Plex/Jellyfin). Downloading: stores files locally without mounting."
+    help.fr = "Diffusion: monte un système de fichiers virtuel pour la lecture directe (recommandé pour Plex/Jellyfin). Téléchargement: stocke les fichiers localement."
+
+    [install.log_level]
+    ask.en = "Log level"
+    ask.fr = "Niveau de journalisation"
+    type = "select"
+    choices = ["debug", "info", "warn", "error"]
+    default = "info"
+
+[resources]
+
+    [resources.sources]
+
+        [resources.sources.main]
+        in_subdir = false
+        format = "tar.gz"
+        rename = "decypharr"
+        # x86_64 / amd64
+        amd64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_Linux_x86_64.tar.gz"
+        amd64.sha256 = "31f71b0f2da7c443714f94f567ea47802a20c25864e48409298b02edcc61128a"
+        # arm64
+        arm64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_Linux_arm64.tar.gz"
+        arm64.sha256 = "b782fc09e0ae8ba27f3472053e06f3b7233a8ed0d8ccfcac616f07cfba704e2a"
+
+        autoupdate.strategy = "latest_github_release"
+        autoupdate.asset.amd64 = "decypharr_Linux_x86_64.tar.gz"
+        autoupdate.asset.arm64 = "decypharr_Linux_arm64.tar.gz"
+
+    [resources.system_user]
+
+    [resources.install_dir]
+    dir = "/opt/decypharr"
+
+    [resources.data_dir]
+    dir = "/var/lib/decypharr"
+
+    [resources.ports]
+    main.default = 8282
+
+    [resources.permissions]
+main.url = "/"
+
+[resources.apt]
+    packages = "fuse3"

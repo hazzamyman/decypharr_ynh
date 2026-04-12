@@ -1,0 +1,42 @@
+name: Apps CI
+
+on:
+  push:
+    branches:
+      - main
+      - testing
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: YunoHost package linter
+        uses: YunoHost-Apps/package-linter-action@main
+
+  tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test:
+          - install
+          - backup_restore
+          - upgrade
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run package CI
+        uses: YunoHost-Apps/package-testing-action@main
+        with:
+          test: ${{ matrix.test }}
+          app: decypharr
+          # Provide a dummy API key for CI (app starts but won't connect to Debrid)
+          args: >-
+            domain=domain.tld
+            debrid_provider=realdebrid
+            debrid_api_key=DUMMYKEYFORCI00000000
+            download_uncached=false
+            mount_type=none
+            log_level=info

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+ynh_script_progression --message="Restoring $app..."
+
+ynh_restore_file --origin_path="$install_dir"
+ynh_restore_file --origin_path="$data_dir"
+
+ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore_file --origin_path="/etc/systemd/system/$app.service"
+ynh_restore_file --origin_path="/etc/logrotate.d/$app"
+
+systemctl enable "$app.service" --quiet
+yunohost service add "$app" \
+    --description="Debrid blackhole client" \
+    --log="/var/log/$app/$app.log"
+
+ynh_systemd_action --service_name="$app" --action="start" --log_path="/var/log/$app/$app.log"
+
+#=================================================
+# FUSE / MOUNT PERMISSIONS
+#=================================================
+ynh_script_progression --message="Configuring FUSE permissions..."
+
+mount_type=$(ynh_app_setting_get --app="$app" --key=mount_type)
+if [ "$mount_type" != "none" ]; then
+    usermod -aG fuse "$app" 2>/dev/null || true
+    if ! grep -q "^user_allow_other" /etc/fuse.conf 2>/dev/null; then
+        echo "user_allow_other" >> /etc/fuse.conf
+    fi
+fi
+
+ynh_script_progression --message="Restoration of $app completed!" --last

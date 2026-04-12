@@ -1,0 +1,34 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# STOP AND REMOVE SERVICE
+#=================================================
+ynh_script_progression --message="Stopping and removing the systemd service..."
+
+ynh_systemd_action --service_name="$app" --action="stop"
+yunohost service remove "$app"
+
+#=================================================
+# UNMOUNT IF NEEDED
+#=================================================
+ynh_script_progression --message="Unmounting filesystems (if any)..."
+
+if mountpoint -q "/mnt/decypharr" 2>/dev/null; then
+    fusermount -uz "/mnt/decypharr" || umount -l "/mnt/decypharr" || true
+fi
+
+#=================================================
+# REMOVE SYSTEM CONFIGURATIONS
+#=================================================
+ynh_script_progression --message="Removing system configurations..."
+
+ynh_remove_logrotate
+ynh_remove_systemd_config
+ynh_remove_nginx_config
+
+ynh_secure_remove --file="/mnt/decypharr"
+
+ynh_script_progression --message="Removal of $app completed!" --last

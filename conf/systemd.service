@@ -1,0 +1,35 @@
+[Unit]
+Description=Decypharr - Debrid blackhole client
+After=network.target
+
+[Service]
+Type=simple
+User=__APP__
+Group=__APP__
+WorkingDirectory=__INSTALL_DIR__
+ExecStart=__INSTALL_DIR__/decypharr --config __DATA_DIR__
+Restart=on-failure
+RestartSec=5
+
+Environment="HOME=__DATA_DIR__"
+
+# Required for FUSE mounting (dfs/rclone modes)
+AmbientCapabilities=CAP_SYS_ADMIN
+CapabilityBoundingSet=CAP_SYS_ADMIN
+MountFlags=shared
+
+# Security hardening - based on YunoHost example
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=full
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+LockPersonality=yes
+
+StandardOutput=append:/var/log/__APP__/__APP__.log
+StandardError=append:/var/log/__APP__/__APP__.log
+
+[Install]
+WantedBy=multi-user.target

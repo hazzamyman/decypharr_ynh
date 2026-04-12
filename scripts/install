@@ -1,0 +1,196 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# ENSURE DIRECTORIES EXIST WITH PROPER PERMISSIONS
+#=================================================
+ynh_script_progression --message="Setting up directories..."
+
+mkdir -p "$install_dir"
+chown "$app:$app" "$install_dir"
+chmod 755 "$install_dir"
+
+mkdir -p "$data_dir"
+chown "$app:$app" "$data_dir"
+chmod 755 "$data_dir"
+
+#=================================================
+# DOWNLOAD AND INSTALL THE APP BINARY
+#=================================================
+ynh_script_progression --message="Installing Decypharr binary..."
+
+ynh_setup_source --dest_dir="$install_dir"
+
+chmod +x "$install_dir/decypharr"
+
+#=================================================
+# ADD A CONFIGURATION
+#=================================================
+ynh_script_progression --message="Generating configuration file..."
+
+# Determine DFS/cache settings based on use case
+if [ "$use_case" = "streaming" ]; then
+    mount_type="dfs"
+    dfs_chunk_size="20MB"
+    dfs_disk_cache_size="50GB"
+    dfs_cache_expiry="24h"
+else
+    mount_type="none"
+    dfs_chunk_size="10MB"
+    dfs_disk_cache_size="0"
+    dfs_cache_expiry="1h"
+fi
+
+# Set mount paths
+if [ "$mount_type" != "none" ]; then
+    mount_path="/mnt/decypharr"
+    cache_dir="$data_dir/cache"
+    mkdir -p "$mount_path" "$cache_dir"
+    chown "$app:$app" "$mount_path" "$cache_dir"
+else
+    mount_path=""
+    cache_dir="$data_dir/cache"
+    mkdir -p "$cache_dir"
+    chown "$app:$app" "$cache_dir"
+fi
+
+ynh_app_setting_set --app="$app" --key=mount_path --value="$mount_path"
+ynh_app_setting_set --app="$app" --key=cache_dir --value="$cache_dir"
+ynh_app_setting_set --app="$app" --key=mount_type --value="$mount_type"
+ynh_app_setting_set --app="$app" --key=use_case --value="$use_case"
+
+# Generate basic config (debrid provider configured via setup wizard)
+ynh_add_config --template="config.json" --destination="$data_dir/config.json"
+
+chmod 600 "$data_dir/config.json"
+chown "$app:$app" "$data_dir/config.json"
+
+#=================================================
+# SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Adding system configurations..."
+
+ynh_add_nginx_config
+ynh_add_systemd_config
+ynh_use_logrotate
+
+yunohost service add "$app" \
+    --description="Debrid blackhole client" \
+    --log="/var/log/$app/$app.log"
+
+#=================================================
+# FUSE / MOUNT PERMISSIONS
+#=================================================
+if [ "$mount_type" != "none" ]; then
+    usermod -aG fuse "$app" 2>/dev/null || true
+    if ! grep -q "^user_allow_other" /etc/fuse.conf 2>/dev/null; then
+        echo "user_allow_other" >> /etc/fuse.conf
+    fi
+fi
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting Decypharr service..."
+
+ynh_systemd_action --service_name="$app" --action="start" --log_path="/var/log/$app/$app.log"
+
+#=================================================
+# DETECT *ARR APPLICATIONS
+#=================================================
+ynh_script_progression --message="Detecting *arr applications..."
+
+direct_arrs_table=$(generate_arr_table "direct")
+related_apps_table=$(generate_arr_table "related")
+
+#=================================================
+# GENERATE POST-INSTALL INFORMATION
+#=================================================
+ynh_script_progression --message="Generating post-install information..."
+
+# Build POST_INSTALL.md content using heredoc
+post_install_file="$data_dir/POST_INSTALL.md"
+cat > "$post_install_file" << 'POSTEOF'
+# Decypharr Installation Complete!
+
+## IMPORTANT: Paid Service Required
+
+Decypharr requires a **paid subscription** to a debrid service (Real-Debrid, AllDebrid, Torbox, etc.) or Usenet provider to function. You will configure this during the first-run setup wizard.
+
+## Access Decypharr
+
+- **URL**: https://DOMAIN_PATH
+- **First Run**: Follow the setup wizard to configure your debrid service
+
+## Detected Direct *arr Clients
+
+The following *arr applications were detected on your YunoHost system. You can add Decypharr as a download client in their settings.
+
+DIRECT_ARRS
+
+## Related Applications
+
+The following related applications were detected on your YunoHost system. These are not directly connected to Decypharr but may be useful for your media workflow.
+
+RELATED_APPS
+
+## Connecting to *arr Applications
+
+1. In your *arr app, go to **Settings > Download Client > Add Client > qBittorrent**
+2. Configure the following:
+   - **Host**: `localhost` (or your YunoHost domain)
+   - **Port**: `PORT`
+   - **Username/Password**: Leave blank or use Decypharr admin credentials
+   - **Category**: Create a category matching your *arr (e.g., `sonarr`, `radarr`)
+3. Click **Test**, then **Save**
+
+## Usage Mode
+
+This installation is configured for: **USE_CASE**
+
+- **Streaming**: Files are cached for smooth playback (recommended for Plex/Jellyfin)
+- **Downloading**: Files are saved directly to disk
+
+Change these settings in Decypharr > Settings > Mount.
+
+## Finding *arr API Keys
+
+Each *arr application has its own API key. To find it:
+
+- **Sonarr**: Settings > General > API Key
+- **Radarr**: Settings > General > API Key
+- **Lidarr**: Settings > General > API Key
+- **Readarr**: Settings > General > API Key
+- **Prowlarr**: Settings > General > API Key
+
+## Documentation
+
+- [Decypharr Docs](https://docs.decypharr.com/)
+- [*arr Setup Guide](https://docs.decypharr.com/guides/arrs)
+- [Troubleshooting](https://docs.decypharr.com/help/troubleshooting)
+POSTEOF
+
+# Replace placeholders with actual values
+sed -i "s|DOMAIN_PATH|https://${domain}${path}|g" "$post_install_file"
+sed -i "s|DIRECT_ARRS|${direct_arrs_table:-No *arr applications detected. Install Sonarr, Radarr, or other *arr apps to connect them to Decypharr.}|g" "$post_install_file"
+sed -i "s|RELATED_APPS|${related_apps_table:-No related applications detected.}|g" "$post_install_file"
+sed -i "s|USE_CASE|${use_case}|g" "$post_install_file"
+sed -i "s|PORT|${port}|g" "$post_install_file"
+
+# Copy to install directory
+cp "$post_install_file" "$install_dir/POST_INSTALL.md"
+chown "$app:$app" "$install_dir/POST_INSTALL.md"
+chmod 644 "$install_dir/POST_INSTALL.md"
+
+# Display post-install information
+echo ""
+echo "=================================================="
+echo "       DECYPHARR INSTALLATION COMPLETE!"
+echo "=================================================="
+echo ""
+cat "$post_install_file"
+echo ""
+
+ynh_script_progression --message="Installation of $app completed!" --last
