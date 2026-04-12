@@ -10,22 +10,35 @@
 
 ## Overview
 
-Decypharr is a self-hosted Debrid client that presents a qBittorrent-compatible API to your *arr stack (Sonarr, Radarr, Lidarr, etc.) while proxying torrents through Real-Debrid, AllDebrid, Debrid-Link, or Torbox.
+Decypharr is a self-hosted Media Gateway for Debrid services and Usenet. It presents a qBittorrent-compatible API to your *arr stack (Sonarr, Radarr, Lidarr, Readarr, etc.) while proxying torrents through Real-Debrid, All-Debrid, Debrid-Link, or Torbox.
 
 **Shipped version:** 2.0
 
-## Documentation and resources
+## Features
 
-- Official documentation: <https://docs.decypharr.com>
-- Configuration reference: <https://docs.decypharr.com/guides/configuration>
-- Upstream repository: <https://github.com/sirrobot01/decypharr>
+- **Debrid Support**: Real-Debrid, All-Debrid, Debrid-Link, Torbox
+- **Usenet Support**: Direct NNTP streaming with Sabnzbd-compatible API
+- ***arr Integration**: Works with Sonarr, Radarr, Lidarr, Readarr, and more
+- **Mounting Options**: DFS (built-in VFS), Rclone, or external Rclone
+- **Setup Wizard**: Easy first-run configuration
+- **Web UI**: Modern interface for managing downloads and settings
 
 ## YunoHost specific features
 
 - Binary install (no Docker required)
 - Automatic architecture detection (amd64 / arm64)
+- Streaming mode: Pre-configured DFS with optimized caching for Plex/Jellyfin
+- Downloading mode: Direct file storage without mounting
 - FUSE / mounting support with automatic capability grant
+- Automatic *arr detection: Shows detected applications after install
 - Config is written once at install; all subsequent changes go through Decypharr's own web UI
+
+## Documentation and resources
+
+- Official documentation: <https://docs.decypharr.com>
+- Configuration reference: <https://docs.decypharr.com/guides/configuration>
+- *arr setup guide: <https://docs.decypharr.com/guides/arrs>
+- Upstream repository: <https://github.com/sirrobot01/decypharr>
 
 ## Developer info
 

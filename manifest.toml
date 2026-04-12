@@ -34,31 +34,14 @@ ram.runtime = "200M"
     type = "group"
     default = "admins"
 
-    [install.debrid_provider]
-    ask.en = "Which Debrid provider will you use?"
-    ask.fr = "Quel fournisseur Debrid allez-vous utiliser ?"
+    [install.use_case]
+    ask.en = "What will you use Decypharr for?"
+    ask.fr = "Pour quoi allez-vous utiliser Decypharr ?"
     type = "select"
-    choices = ["realdebrid", "alldebrid", "debridlink", "torbox"]
-    default = "realdebrid"
-
-    [install.debrid_api_key]
-    ask.en = "Your Debrid provider API key"
-    ask.fr = "Votre clé API du fournisseur Debrid"
-    type = "string"
-    example = "XXXXXXXXXXXXXXXXXXXX"
-
-    [install.download_uncached]
-    ask.en = "Allow downloading uncached torrents? (slower, uses provider quota)"
-    ask.fr = "Autoriser le téléchargement de torrents non mis en cache ?"
-    type = "boolean"
-    default = false
-
-    [install.mount_type]
-    ask.en = "Filesystem mount type (none = no mounting, dfs = built-in VFS, rclone = embedded rclone)"
-    ask.fr = "Type de montage système de fichiers"
-    type = "select"
-    choices = ["none", "dfs", "rclone"]
-    default = "none"
+    choices = ["streaming", "downloading"]
+    default = "streaming"
+    help.en = "Streaming: mounts a virtual filesystem for direct playback (recommended for Plex/Jellyfin). Downloading: stores files locally without mounting."
+    help.fr = "Diffusion: monte un système de fichiers virtuel pour la lecture directe (recommandé pour Plex/Jellyfin). Téléchargement: stocke les fichiers localement."
 
     [install.log_level]
     ask.en = "Log level"
