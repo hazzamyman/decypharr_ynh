@@ -10,14 +10,7 @@ ynh_script_progression --message="Installing Decypharr binary..."
 
 ynh_setup_source --dest_dir="$install_dir"
 
-_binary=$(find "$install_dir" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
-if [ -z "$_binary" ]; then
-    ynh_die --message="Could not find decypharr binary in $install_dir"
-fi
-chmod 755 "$_binary"
-if [ "$_binary" != "$install_dir/decypharr" ]; then
-    mv "$_binary" "$install_dir/decypharr"
-fi
+chmod +x "$install_dir/decypharr"
 
 #=================================================
 # ADD A CONFIGURATION
@@ -47,6 +40,7 @@ fi
 ynh_app_setting_set --app="$app" --key=mount_path --value="$mount_path"
 ynh_app_setting_set --app="$app" --key=cache_dir --value="$cache_dir"
 ynh_app_setting_set --app="$app" --key=download_uncached_json --value="$download_uncached_json"
+ynh_app_setting_set --app="$app" --key=mount_type --value="$mount_type"
 
 ynh_add_config --template="config.json" --destination="$data_dir/config.json"
 

@@ -15,16 +15,9 @@ ynh_systemd_action --service_name="$app" --action="stop"
 #=================================================
 ynh_script_progression --message="Upgrading Decypharr binary..."
 
-ynh_setup_source --dest_dir="$install_dir"
+ynh_setup_source --dest_dir="$install_dir" --full_replace
 
-_binary=$(find "$install_dir" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
-if [ -z "$_binary" ]; then
-    ynh_die --message="Could not find decypharr binary in $install_dir"
-fi
-chmod 755 "$_binary"
-if [ "$_binary" != "$install_dir/decypharr" ]; then
-    mv "$_binary" "$install_dir/decypharr"
-fi
+chmod +x "$install_dir/decypharr"
 
 #=================================================
 # UPDATE SYSTEM CONFIGS

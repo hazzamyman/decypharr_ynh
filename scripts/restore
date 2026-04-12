@@ -19,4 +19,17 @@ yunohost service add "$app" \
 
 ynh_systemd_action --service_name="$app" --action="start" --log_path="/var/log/$app/$app.log"
 
+#=================================================
+# FUSE / MOUNT PERMISSIONS
+#=================================================
+ynh_script_progression --message="Configuring FUSE permissions..."
+
+mount_type=$(ynh_app_setting_get --app="$app" --key=mount_type)
+if [ "$mount_type" != "none" ]; then
+    usermod -aG fuse "$app" 2>/dev/null || true
+    if ! grep -q "^user_allow_other" /etc/fuse.conf 2>/dev/null; then
+        echo "user_allow_other" >> /etc/fuse.conf
+    fi
+fi
+
 ynh_script_progression --message="Restoration of $app completed!" --last
