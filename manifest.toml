@@ -76,15 +76,15 @@ ram.runtime = "200M"
         format = "tar.gz"
         rename = "decypharr"
         # x86_64 / amd64
-        amd64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_linux_amd64.tar.gz"
-        amd64.sha256 = "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
+        amd64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_Linux_x86_64.tar.gz"
+        amd64.sha256 = "31f71b0f2da7c443714f94f567ea47802a20c25864e48409298b02edcc61128a"
         # arm64
-        arm64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_linux_arm64.tar.gz"
+        arm64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_Linux_arm64.tar.gz"
         arm64.sha256 = "b782fc09e0ae8ba27f3472053e06f3b7233a8ed0d8ccfcac616f07cfba704e2a"
 
         autoupdate.strategy = "latest_github_release"
-        autoupdate.asset.amd64 = "decypharr_linux_amd64.tar.gz"
-        autoupdate.asset.arm64 = "decypharr_linux_arm64.tar.gz"
+        autoupdate.asset.amd64 = "decypharr_Linux_x86_64.tar.gz"
+        autoupdate.asset.arm64 = "decypharr_Linux_arm64.tar.gz"
 
     [resources.system_user]
 
