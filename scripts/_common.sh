@@ -4,4 +4,5 @@
 # YunoHost's helpers already export $app, $domain, $port,
 # $install_dir, $data_dir, etc.
 
-# Nothing extra needed for a simple binary install.
+# Source *arr detection functions
+source _arrs.sh
