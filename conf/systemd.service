@@ -14,14 +14,14 @@ RestartSec=5
 Environment="HOME=__DATA_DIR__"
 
 # Required for FUSE mounting (dfs/rclone modes)
-AmbientCapabilities=CAP_SYS_ADMIN
-CapabilityBoundingSet=CAP_SYS_ADMIN
+AmbientCapabilities=CAP_SYS_ADMIN CAP_FSETID CAP_SETGID CAP_SETUID CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_FSETID CAP_SETGID CAP_SETUID CAP_NET_ADMIN
 MountFlags=shared
 
 # Security hardening - based on YunoHost example
 NoNewPrivileges=yes
 PrivateTmp=yes
-PrivateDevices=yes
+# Note: PrivateDevices is NOT set to allow access to /dev/fuse
 ProtectSystem=full
 ProtectControlGroups=yes
 ProtectKernelModules=yes

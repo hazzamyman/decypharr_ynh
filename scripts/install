@@ -96,9 +96,14 @@ if [ "$mount_type" != "none" ]; then
         ynh_die "FUSE kernel module could not be loaded. Your system kernel may not have FUSE support enabled or it is blocked. Streaming mode requires FUSE. Please try 'downloading' mode instead, or enable FUSE in your kernel (modprobe fuse)."
     fi
     
-    # 2. Check /dev/fuse exists - FAIL if not available
+    # 2. Check /dev/fuse exists - try to create if missing
     if [ ! -c /dev/fuse ]; then
-        ynh_die "/dev/fuse does not exist. Your system does not support FUSE devices. Streaming mode requires FUSE. Please try 'downloading' mode instead."
+        # Try to create the fuse device node (major=10, minor=229)
+        mknod /dev/fuse c 10 229 2>/dev/null && chmod 666 /dev/fuse 2>/dev/null
+        # If still no /dev/fuse, fail
+        if [ ! -c /dev/fuse ]; then
+            ynh_die "/dev/fuse could not be created. Your system does not support FUSE devices. Streaming mode requires FUSE. Please try 'downloading' mode instead."
+        fi
     fi
     
     # 3. Persist FUSE module for boot
@@ -111,10 +116,24 @@ if [ "$mount_type" != "none" ]; then
         echo "user_allow_other" >> /etc/fuse.conf 2>/dev/null || true
     fi
     
-    # 5. Add user to fuse group
+    # 5. Create fuse group if it doesn't exist, then add user
+    if ! getent group fuse > /dev/null 2>&1; then
+        groupadd fuse 2>/dev/null || true
+    fi
     usermod -aG fuse "$app" 2>/dev/null || true
     
-    # 6. Clean up stale mount
+    # 6. Create udev rule to ensure /dev/fuse exists on boot
+    if [ ! -f /etc/udev/rules.d/99-fuse.rules ]; then
+        echo 'KERNEL=="fuse", NAME="fuse", MODE="0666"' > /etc/udev/rules.d/99-fuse.rules 2>/dev/null || true
+    fi
+    
+    # 7. Ensure /dev/fuse exists
+    if [ ! -c /dev/fuse ]; then
+        mknod /dev/fuse c 10 229 2>/dev/null || true
+        chmod 666 /dev/fuse 2>/dev/null || true
+    fi
+    
+    # 8. Clean up stale mount
     mount_path="/mnt/decypharr"
     if mountpoint -q "$mount_path" 2>/dev/null; then
         fusermount -uz "$mount_path" 2>/dev/null || umount -l "$mount_path" 2>/dev/null || true
