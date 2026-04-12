@@ -1,32 +1,60 @@
-# After installing Decypharr
+# Decypharr Installation Complete!
 
-## First-run setup
+## IMPORTANT: Paid Service Required
 
-Open the app from your YunoHost portal. Decypharr will guide you through a **setup wizard** to:
+Decypharr requires a **paid subscription** to a debrid service (Real-Debrid, AllDebrid, Torbox, etc.) or Usenet provider to function. You will configure this during the first-run setup wizard.
 
-1. Set your admin **username and password**
-2. Confirm or adjust your Debrid provider settings
+## Access Decypharr
 
-## Connecting *arr apps (Sonarr / Radarr / etc.)
+- **URL**: https://__DOMAIN____PATH__
+- **First Run**: Follow the setup wizard to configure your debrid service
 
-In each *arr app, add a **qBittorrent** download client:
+## Detected Direct *arr Clients
 
-| Field | Value |
-|---|---|
-| Host | `your-domain.tld` (or the path where Decypharr is installed) |
-| Port | `443` (HTTPS via YunoHost's NGINX) |
-| Use SSL | ✅ |
-| Username | your Decypharr admin username |
-| Password | your Decypharr admin password |
-| Category | (leave blank or use `sonarr` / `radarr`) |
+The following *arr applications were detected on your YunoHost system. You can add Decypharr as a download client in their settings.
 
-Alternatively use Decypharr's **web UI → Arrs** section to add them there.
+__DIRECT_ARRS__
 
-## Config file location
+## Related Applications
 
-`/var/lib/decypharr/config.json`
+The following related applications were detected on your YunoHost system. These are not directly connected to Decypharr but may be useful for your media workflow.
 
-Do not edit while the service is running. Use the web UI instead.
+__RELATED_APPS__
+
+## Connecting to *arr Applications
+
+1. In your *arr app, go to **Settings → Download Client → Add Client → qBittorrent**
+2. Configure the following:
+   - **Host**: `localhost` (or your YunoHost domain)
+   - **Port**: `__PORT__`
+   - **Username/Password**: Leave blank or use Decypharr admin credentials
+   - **Category**: Create a category matching your *arr (e.g., `sonarr`, `radarr`)
+3. Click **Test**, then **Save**
+
+## Usage Mode
+
+This installation is configured for: **__USE_CASE__**
+
+- **Streaming**: Files are cached for smooth playback (recommended for Plex/Jellyfin)
+- **Downloading**: Files are saved directly to disk
+
+Change these settings in Decypharr → Settings → Mount.
+
+## Finding *arr API Keys
+
+Each *arr application has its own API key. To find it:
+
+- **Sonarr**: Settings → General → API Key
+- **Radarr**: Settings → General → API Key
+- **Lidarr**: Settings → General → API Key
+- **Readarr**: Settings → General → API Key
+- **Prowlarr**: Settings → General → API Key
+
+## Documentation
+
+- [Decypharr Docs](https://docs.decypharr.com/)
+- [*arr Setup Guide](https://docs.decypharr.com/guides/arrs)
+- [Troubleshooting](https://docs.decypharr.com/help/troubleshooting)
 
 ## Logs
 
