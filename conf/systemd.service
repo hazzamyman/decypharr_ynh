@@ -8,7 +8,7 @@ User=__APP__
 Group=__APP__
 
 WorkingDirectory=__DATA_DIR__
-ExecStart=__INSTALL_DIR__/decypharr --config __DATA_DIR__/config.json
+ExecStart=__INSTALL_DIR__/decypharr --config __DATA_DIR__
 
 Restart=on-failure
 RestartSec=5

@@ -8,31 +8,15 @@
   "username": "admin",
   "password": "",
   "api_token": "",
-  "debrids": [
-    {
-      "provider": "__DEBRID_PROVIDER__",
-      "name": "Primary",
-      "api_key": "__DEBRID_API_KEY__",
-      "download_uncached": __DOWNLOAD_UNCACHED_JSON__,
-      "rate_limit": "200/minute",
-      "workers": 50,
-      "minimum_free_slot": 0,
-      "limit": 0,
-      "torrents_refresh_interval": "5m",
-      "download_links_refresh_interval": "10m",
-      "auto_expire_links_after": "24h",
-      "proxy": "",
-      "unpack_rar": true
-    }
-  ],
+  "debrids": [],
   "mount": {
     "type": "__MOUNT_TYPE__",
     "mount_path": "__MOUNT_PATH__",
     "dfs": {
       "cache_dir": "__CACHE_DIR__",
-      "chunk_size": "10MB",
-      "disk_cache_size": "0",
-      "cache_expiry": "1h",
+      "chunk_size": "__DFS_CHUNK_SIZE__",
+      "disk_cache_size": "__DFS_DISK_CACHE_SIZE__",
+      "cache_expiry": "__DFS_CACHE_EXPIRY__",
       "cache_cleanup_interval": "10m",
       "allow_other": true,
       "default_permissions": true
