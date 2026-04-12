@@ -1,4 +1,5 @@
 #!/bin/bash
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -10,15 +11,25 @@ ynh_script_progression "Stopping Decypharr service for upgrade..."
 ynh_systemctl --service="$app" --action="stop"
 
 #=================================================
-# INSTALL NEW BINARY
+# UPGRADE THE BINARY
 #=================================================
 ynh_script_progression "Upgrading Decypharr binary..."
 
-_binary=$(find "$YNH_APP_BUILDDIR/main/" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
-install -Dm755 "$_binary" "$install_dir/decypharr"
+# Sources are extracted into $install_dir by the resources system
+_binary=$(find "$install_dir" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
+
+if [ -z "$_binary" ]; then
+    ynh_die "Could not find decypharr binary in $install_dir"
+fi
+
+chmod 755 "$_binary"
+
+if [ "$_binary" != "$install_dir/decypharr" ]; then
+    mv "$_binary" "$install_dir/decypharr"
+fi
 
 #=================================================
-# UPDATE CONFIGURATION (preserves user edits via ynh_config_add)
+# UPDATE SYSTEM CONFIGS
 #=================================================
 ynh_script_progression "Updating system configurations..."
 
@@ -26,20 +37,18 @@ ynh_config_add_nginx
 ynh_config_add_systemd
 ynh_config_add_logrotate
 
-# Only reconfigure config.json when upstream vars changed
-# (user's debrid/arr config inside the file is managed via the web UI and should NOT be overwritten on upgrade)
-# Re-render only server-level settings that come from YNH variables.
-# We achieve this by using ynh_config_add with a partial template; see conf/config.json.
+yunohost service add "$app" \
+    --description="Debrid blackhole client" \
+    --log="/var/log/$app/$app.log"
+
+# Note: config.json is NOT re-rendered on upgrade — the user manages it
+# via Decypharr's web UI and we must not overwrite their settings.
 
 #=================================================
 # START SERVICE
 #=================================================
 ynh_script_progression "Restarting Decypharr service..."
 
-ynh_systemctl --service="$app" --action="start" --wait_until="listening on"
+ynh_systemctl --service="$app" --action="start"
 
-yunohost service add "$app" \
-    --description="Debrid blackhole client" \
-    --log="/var/log/$app/$app.log"
-
-ynh_script_progression "Upgrade of Decypharr completed!"
+ynh_script_progression "Upgrade of $app completed!"

@@ -1,18 +1,15 @@
 #!/bin/bash
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
-ynh_script_progression "Backing up Decypharr..."
+ynh_script_progression "Backing up $app..."
 
-# Binary
 ynh_backup "$install_dir"
-
-# Config and runtime data (config.json, arr state, etc.)
 ynh_backup "$data_dir"
 
-# System configs
-ynh_backup_conf_nginx
-ynh_backup_conf_systemd
-ynh_backup_conf_logrotate
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup "/etc/systemd/system/$app.service"
+ynh_backup "/etc/logrotate.d/$app"
 
-ynh_script_progression "Backup of Decypharr completed!"
+ynh_script_progression "Backup of $app completed!"

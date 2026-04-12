@@ -1,4 +1,5 @@
 #!/bin/bash
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -7,55 +8,75 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression "Installing Decypharr binary..."
 
-# The sources resource already downloaded and extracted the tarball.
-# goreleaser typically names the binary 'decypharr' inside the archive,
-# but handle the case where it might be 'decypharr_Linux_x86_64' etc.
-_binary=$(find "$YNH_APP_BUILDDIR/main/" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
-install -Dm755 "$_binary" "$install_dir/decypharr"
+# The resources system extracts the tarball directly into $install_dir.
+# Find the binary regardless of exact filename (goreleaser may name it
+# 'decypharr' or 'decypharr_Linux_x86_64' etc.)
+_binary=$(find "$install_dir" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
+
+if [ -z "$_binary" ]; then
+    ynh_die "Could not find decypharr binary in $install_dir"
+fi
+
+chmod 755 "$_binary"
+
+# Rename to a fixed path so the systemd unit always works
+if [ "$_binary" != "$install_dir/decypharr" ]; then
+    mv "$_binary" "$install_dir/decypharr"
+fi
 
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
 ynh_script_progression "Generating configuration file..."
 
-# Determine mount_path only when mounting is enabled
-mount_path=""
-cache_dir=""
+# Convert the 1/0 boolean from YunoHost args to JSON true/false
+if [ "$download_uncached" = "1" ]; then
+    download_uncached_json="true"
+else
+    download_uncached_json="false"
+fi
+
+# Set mount paths
 if [ "$mount_type" != "none" ]; then
     mount_path="/mnt/decypharr"
     cache_dir="$data_dir/cache"
     mkdir -p "$mount_path" "$cache_dir"
     chown "$app:$app" "$mount_path" "$cache_dir"
+else
+    mount_path=""
+    cache_dir="$data_dir/cache"
+    mkdir -p "$cache_dir"
+    chown "$app:$app" "$cache_dir"
 fi
 
+# Save settings for upgrade/restore scripts
+ynh_app_setting_set --key=mount_path --value="$mount_path"
+ynh_app_setting_set --key=cache_dir --value="$cache_dir"
+ynh_app_setting_set --key=download_uncached_json --value="$download_uncached_json"
+
 ynh_config_add --template="config.json" --destination="$data_dir/config.json"
+
+chmod 600 "$data_dir/config.json"
+chown "$app:$app" "$data_dir/config.json"
 
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
 ynh_script_progression "Adding system configurations..."
 
-# NGINX reverse proxy
 ynh_config_add_nginx
-
-# Systemd service
 ynh_config_add_systemd
+ynh_config_add_logrotate
 
 yunohost service add "$app" \
     --description="Debrid blackhole client" \
     --log="/var/log/$app/$app.log"
 
-# Logrotate
-ynh_config_add_logrotate
-
 #=================================================
-# FUSE / mount permissions (only when mounting)
+# FUSE / MOUNT PERMISSIONS
 #=================================================
 if [ "$mount_type" != "none" ]; then
-    # Allow the app user to use FUSE
     usermod -aG fuse "$app" 2>/dev/null || true
-
-    # allow_other in /etc/fuse.conf
     if ! grep -q "^user_allow_other" /etc/fuse.conf 2>/dev/null; then
         echo "user_allow_other" >> /etc/fuse.conf
     fi
@@ -66,6 +87,6 @@ fi
 #=================================================
 ynh_script_progression "Starting Decypharr service..."
 
-ynh_systemctl --service="$app" --action="start" --wait_until="listening on"
+ynh_systemctl --service="$app" --action="start"
 
-ynh_script_progression "Installation of Decypharr completed!"
+ynh_script_progression "Installation of $app completed!"

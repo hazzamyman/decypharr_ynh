@@ -1,4 +1,5 @@
 #!/bin/bash
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -29,8 +30,8 @@ ynh_config_remove_systemd
 ynh_config_remove_nginx
 
 #=================================================
-# REMOVE LEFTOVER FILES
+# REMOVE MOUNT DIRECTORY
 #=================================================
 ynh_safe_rm "/mnt/decypharr"
 
-ynh_script_progression "Removal of Decypharr completed!"
+ynh_script_progression "Removal of $app completed!"
