@@ -12,7 +12,7 @@
 
 Decypharr is a self-hosted Debrid client that presents a qBittorrent-compatible API to your *arr stack (Sonarr, Radarr, Lidarr, etc.) while proxying torrents through Real-Debrid, AllDebrid, Debrid-Link, or Torbox.
 
-**Shipped version:** 1.1.6
+**Shipped version:** 2.0
 
 ## Documentation and resources
 

@@ -5,7 +5,7 @@ name = "Decypharr"
 description.en = "Debrid client with qBittorrent API, WebDAV, and *arr integration"
 description.fr = "Client Debrid avec API qBittorrent, WebDAV, et intégration *arr"
 
-version = "1.1.6~ynh1"
+version = "2.0~ynh1"
 
 maintainers = ["your-name"]
 
@@ -73,16 +73,18 @@ ram.runtime = "200M"
 
         [resources.sources.main]
         in_subdir = false
+        format = "tar.gz"
+        rename = "decypharr"
         # x86_64 / amd64
-        amd64.url = "https://github.com/sirrobot01/decypharr/releases/download/v1.1.6/decypharr_Linux_x86_64.tar.gz"
-        amd64.sha256 = "52ebc52a33b75bd3b68d1958364325644fed2e731103a03abe89851bca07f333"
+        amd64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_linux_amd64.tar.gz"
+        amd64.sha256 = "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
         # arm64
-        arm64.url = "https://github.com/sirrobot01/decypharr/releases/download/v1.1.6/decypharr_Linux_arm64.tar.gz"
-        arm64.sha256 = "62c3be04be01a933b6a71eca8f5df8a4c8636437034f14444d4e9ef86c52e3bc"
+        arm64.url = "https://github.com/sirrobot01/decypharr/releases/download/v2.0/decypharr_linux_arm64.tar.gz"
+        arm64.sha256 = "b782fc09e0ae8ba27f3472053e06f3b7233a8ed0d8ccfcac616f07cfba704e2a"
 
         autoupdate.strategy = "latest_github_release"
-        autoupdate.asset.amd64 = "decypharr_Linux_x86_64.tar.gz"
-        autoupdate.asset.arm64 = "decypharr_Linux_arm64.tar.gz"
+        autoupdate.asset.amd64 = "decypharr_linux_amd64.tar.gz"
+        autoupdate.asset.arm64 = "decypharr_linux_arm64.tar.gz"
 
     [resources.system_user]
 
@@ -99,5 +101,8 @@ ram.runtime = "200M"
     [resources.ports]
     main.default = 8282
 
-    [resources.apt]
+    [resources.permissions]
+main.url = "/"
+
+[resources.apt]
     packages = "fuse3"
