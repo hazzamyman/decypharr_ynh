@@ -4,24 +4,17 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# INSTALL THE APP BINARY
+# DOWNLOAD AND INSTALL THE APP BINARY
 #=================================================
-ynh_script_progression "Installing Decypharr binary..."
+ynh_script_progression --message="Installing Decypharr binary..."
 
 ynh_setup_source --dest_dir="$install_dir"
 
-# The resources system extracts the tarball directly into $install_dir.
-# Find the binary regardless of exact filename (goreleaser may name it
-# 'decypharr' or 'decypharr_Linux_x86_64' etc.)
 _binary=$(find "$install_dir" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
-
 if [ -z "$_binary" ]; then
-    ynh_die "Could not find decypharr binary in $install_dir"
+    ynh_die --message="Could not find decypharr binary in $install_dir"
 fi
-
 chmod 755 "$_binary"
-
-# Rename to a fixed path so the systemd unit always works
 if [ "$_binary" != "$install_dir/decypharr" ]; then
     mv "$_binary" "$install_dir/decypharr"
 fi
@@ -29,9 +22,9 @@ fi
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
-ynh_script_progression "Generating configuration file..."
+ynh_script_progression --message="Generating configuration file..."
 
-# Convert the 1/0 boolean from YunoHost args to JSON true/false
+# YunoHost passes booleans as 1/0 — convert to JSON true/false
 if [ "$download_uncached" = "1" ]; then
     download_uncached_json="true"
 else
@@ -51,12 +44,11 @@ else
     chown "$app:$app" "$cache_dir"
 fi
 
-# Save settings for upgrade/restore scripts
-ynh_app_setting_set --key=mount_path --value="$mount_path"
-ynh_app_setting_set --key=cache_dir --value="$cache_dir"
-ynh_app_setting_set --key=download_uncached_json --value="$download_uncached_json"
+ynh_app_setting_set --app="$app" --key=mount_path --value="$mount_path"
+ynh_app_setting_set --app="$app" --key=cache_dir --value="$cache_dir"
+ynh_app_setting_set --app="$app" --key=download_uncached_json --value="$download_uncached_json"
 
-ynh_config_add --template="config.json" --destination="$data_dir/config.json"
+ynh_add_config --template="config.json" --destination="$data_dir/config.json"
 
 chmod 600 "$data_dir/config.json"
 chown "$app:$app" "$data_dir/config.json"
@@ -64,11 +56,11 @@ chown "$app:$app" "$data_dir/config.json"
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression "Adding system configurations..."
+ynh_script_progression --message="Adding system configurations..."
 
-ynh_config_add_nginx
-ynh_config_add_systemd
-ynh_config_add_logrotate
+ynh_add_nginx_config
+ynh_add_systemd_config
+ynh_use_logrotate
 
 yunohost service add "$app" \
     --description="Debrid blackhole client" \
@@ -87,8 +79,8 @@ fi
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression "Starting Decypharr service..."
+ynh_script_progression --message="Starting Decypharr service..."
 
-ynh_systemctl --service="$app" --action="start"
+ynh_systemd_action --service_name="$app" --action="start" --log_path="/var/log/$app/$app.log"
 
-ynh_script_progression "Installation of $app completed!"
+ynh_script_progression --message="Installation of $app completed!" --last

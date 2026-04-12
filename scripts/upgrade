@@ -6,26 +6,22 @@ source /usr/share/yunohost/helpers
 #=================================================
 # STOP SERVICE
 #=================================================
-ynh_script_progression "Stopping Decypharr service for upgrade..."
+ynh_script_progression --message="Stopping Decypharr service for upgrade..."
 
-ynh_systemctl --service="$app" --action="stop"
+ynh_systemd_action --service_name="$app" --action="stop"
 
 #=================================================
 # UPGRADE THE BINARY
 #=================================================
-ynh_script_progression "Upgrading Decypharr binary..."
+ynh_script_progression --message="Upgrading Decypharr binary..."
 
 ynh_setup_source --dest_dir="$install_dir"
 
-# Sources are extracted into $install_dir by the resources system
 _binary=$(find "$install_dir" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
-
 if [ -z "$_binary" ]; then
-    ynh_die "Could not find decypharr binary in $install_dir"
+    ynh_die --message="Could not find decypharr binary in $install_dir"
 fi
-
 chmod 755 "$_binary"
-
 if [ "$_binary" != "$install_dir/decypharr" ]; then
     mv "$_binary" "$install_dir/decypharr"
 fi
@@ -33,24 +29,23 @@ fi
 #=================================================
 # UPDATE SYSTEM CONFIGS
 #=================================================
-ynh_script_progression "Updating system configurations..."
+ynh_script_progression --message="Updating system configurations..."
 
-ynh_config_add_nginx
-ynh_config_add_systemd
-ynh_config_add_logrotate
+ynh_add_nginx_config
+ynh_add_systemd_config
+ynh_use_logrotate
 
 yunohost service add "$app" \
     --description="Debrid blackhole client" \
     --log="/var/log/$app/$app.log"
 
-# Note: config.json is NOT re-rendered on upgrade — the user manages it
-# via Decypharr's web UI and we must not overwrite their settings.
+# NOTE: config.json is NOT re-rendered on upgrade to preserve user settings
 
 #=================================================
 # START SERVICE
 #=================================================
-ynh_script_progression "Restarting Decypharr service..."
+ynh_script_progression --message="Restarting Decypharr service..."
 
-ynh_systemctl --service="$app" --action="start"
+ynh_systemd_action --service_name="$app" --action="start" --log_path="/var/log/$app/$app.log"
 
-ynh_script_progression "Upgrade of $app completed!"
+ynh_script_progression --message="Upgrade of $app completed!" --last
