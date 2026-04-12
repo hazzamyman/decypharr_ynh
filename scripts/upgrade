@@ -15,6 +15,8 @@ ynh_systemctl --service="$app" --action="stop"
 #=================================================
 ynh_script_progression "Upgrading Decypharr binary..."
 
+ynh_setup_source --dest_dir="$install_dir"
+
 # Sources are extracted into $install_dir by the resources system
 _binary=$(find "$install_dir" -maxdepth 1 -type f -name "decypharr*" ! -name "*.md" ! -name "LICENSE" | head -1)
 
