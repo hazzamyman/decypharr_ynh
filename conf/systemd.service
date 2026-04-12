@@ -1,8 +1,6 @@
 [Unit]
 Description=Decypharr - Debrid blackhole client
 After=network.target
-# If mounting is used, ensure FUSE is available
-After=sys-fs-fuse-connections.mount
 
 [Service]
 Type=simple
@@ -12,24 +10,18 @@ Group=__APP__
 WorkingDirectory=__DATA_DIR__
 ExecStart=__INSTALL_DIR__/decypharr --config __DATA_DIR__/config.json
 
-# Restart on failure with backoff
 Restart=on-failure
 RestartSec=5
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
-# FUSE / mount capability (required when mount_type != none)
-# These are harmless when mounting is not used.
+# Required for FUSE mounting (harmless when mount_type=none)
 AmbientCapabilities=CAP_SYS_ADMIN
 CapabilityBoundingSet=CAP_SYS_ADMIN
-
-# Allow FUSE mounts to be visible outside the service namespace
 MountFlags=shared
 
-# Environment
 Environment="HOME=__DATA_DIR__"
 
-# Logging
 StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=append:/var/log/__APP__/__APP__.log
 
