@@ -47,6 +47,11 @@ fi
 if [ "$mount_type" != "none" ]; then
     mount_path="/mnt/decypharr"
     cache_dir="$data_dir/cache"
+    # Clean up any stale mount before creating directory
+    if mountpoint -q "$mount_path" 2>/dev/null; then
+        fusermount -uz "$mount_path" 2>/dev/null || umount -l "$mount_path" 2>/dev/null || true
+    fi
+    rm -rf "$mount_path" 2>/dev/null || true
     mkdir -p "$mount_path" "$cache_dir"
     chown "$app:$app" "$mount_path" "$cache_dir"
 else
