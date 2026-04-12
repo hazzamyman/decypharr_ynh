@@ -8,6 +8,8 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression "Installing Decypharr binary..."
 
+ynh_setup_source --dest_dir="$install_dir"
+
 # The resources system extracts the tarball directly into $install_dir.
 # Find the binary regardless of exact filename (goreleaser may name it
 # 'decypharr' or 'decypharr_Linux_x86_64' etc.)
