@@ -86,13 +86,42 @@ yunohost service add "$app" \
     --log="/var/log/$app/$app.log"
 
 #=================================================
-# FUSE / MOUNT PERMISSIONS
+# FUSE / MOUNT CONFIGURATION
 #=================================================
 if [ "$mount_type" != "none" ]; then
-    usermod -aG fuse "$app" 2>/dev/null || true
-    if ! grep -q "^user_allow_other" /etc/fuse.conf 2>/dev/null; then
-        echo "user_allow_other" >> /etc/fuse.conf
+    ynh_script_progression --message="Configuring FUSE for filesystem mounting..."
+    
+    # 1. Load FUSE kernel module - FAIL if not available
+    if ! modprobe fuse 2>/dev/null; then
+        ynh_die "FUSE kernel module could not be loaded. Your system kernel may not have FUSE support enabled or it is blocked. Streaming mode requires FUSE. Please try 'downloading' mode instead, or enable FUSE in your kernel (modprobe fuse)."
     fi
+    
+    # 2. Check /dev/fuse exists - FAIL if not available
+    if [ ! -c /dev/fuse ]; then
+        ynh_die "/dev/fuse does not exist. Your system does not support FUSE devices. Streaming mode requires FUSE. Please try 'downloading' mode instead."
+    fi
+    
+    # 3. Persist FUSE module for boot
+    if ! grep -q "^fuse$" /etc/modules 2>/dev/null; then
+        echo "fuse" >> /etc/modules 2>/dev/null || true
+    fi
+    
+    # 4. Configure fuse.conf with user_allow_other
+    if ! grep -q "^user_allow_other" /etc/fuse.conf 2>/dev/null; then
+        echo "user_allow_other" >> /etc/fuse.conf 2>/dev/null || true
+    fi
+    
+    # 5. Add user to fuse group
+    usermod -aG fuse "$app" 2>/dev/null || true
+    
+    # 6. Clean up stale mount
+    mount_path="/mnt/decypharr"
+    if mountpoint -q "$mount_path" 2>/dev/null; then
+        fusermount -uz "$mount_path" 2>/dev/null || umount -l "$mount_path" 2>/dev/null || true
+    fi
+    rm -rf "$mount_path" 2>/dev/null || true
+    mkdir -p "$mount_path"
+    chown "$app:$app" "$mount_path"
 fi
 
 #=================================================

@@ -35,6 +35,38 @@ yunohost service add "$app" \
 # NOTE: config.json is NOT re-rendered on upgrade to preserve user settings
 
 #=================================================
+# FUSE / MOUNT CONFIGURATION
+#=================================================
+mount_type=$(ynh_app_setting_get --app="$app" --key=mount_type)
+
+if [ "$mount_type" != "none" ]; then
+    ynh_script_progression --message="Verifying FUSE configuration..."
+    
+    # 1. Load FUSE kernel module - FAIL if not available
+    if ! modprobe fuse 2>/dev/null; then
+        ynh_die "FUSE kernel module could not be loaded. Your system kernel may not have FUSE support enabled or it is blocked. Streaming mode requires FUSE. Please try 'downloading' mode instead."
+    fi
+    
+    # 2. Check /dev/fuse exists - FAIL if not available
+    if [ ! -c /dev/fuse ]; then
+        ynh_die "/dev/fuse does not exist. Your system does not support FUSE devices. Streaming mode requires FUSE. Please try 'downloading' mode instead."
+    fi
+    
+    # 3. Persist FUSE module for boot
+    if ! grep -q "^fuse$" /etc/modules 2>/dev/null; then
+        echo "fuse" >> /etc/modules 2>/dev/null || true
+    fi
+    
+    # 4. Configure fuse.conf with user_allow_other
+    if ! grep -q "^user_allow_other" /etc/fuse.conf 2>/dev/null; then
+        echo "user_allow_other" >> /etc/fuse.conf 2>/dev/null || true
+    fi
+    
+    # 5. Add user to fuse group
+    usermod -aG fuse "$app" 2>/dev/null || true
+fi
+
+#=================================================
 # START SERVICE
 #=================================================
 ynh_script_progression --message="Restarting Decypharr service..."
