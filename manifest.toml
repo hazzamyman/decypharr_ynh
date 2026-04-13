@@ -29,10 +29,7 @@ ram.runtime = "200M"
 
     [install.domain]
     type = "domain"
-
-    [install.path]
-    type = "path"
-    default = "/decypharr"
+    help = "Decypharr requires its own domain (not a subpath) due to how it handles URLs internally."
 
     [install.init_main_permission]
     type = "group"
