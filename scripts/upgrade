@@ -35,9 +35,30 @@ yunohost service add "$app" \
 # NOTE: config.json is NOT re-rendered on upgrade to preserve user settings
 
 #=================================================
-# FUSE / MOUNT CONFIGURATION
+# HANDLE CACHE LOCATION SETTING
 #=================================================
 mount_type=$(ynh_app_setting_get --app="$app" --key=mount_type)
+cache_location=$(ynh_app_setting_get --app="$app" --key=cache_location)
+
+# Migrate existing installs without cache_location to persistent (safe default)
+if [ -z "$cache_location" ]; then
+    cache_location="persistent"
+    ynh_app_setting_set --app="$app" --key=cache_location --value="$cache_location"
+fi
+
+# Set cache_dir based on cache_location
+if [ "$mount_type" != "none" ]; then
+    if [ "$cache_location" = "temporary" ]; then
+        cache_dir="/tmp/decypharr-cache"
+    else
+        cache_dir="$data_dir/cache"
+    fi
+    ynh_app_setting_set --app="$app" --key=cache_dir --value="$cache_dir"
+fi
+
+#=================================================
+# FUSE / MOUNT CONFIGURATION
+#=================================================
 
 if [ "$mount_type" != "none" ]; then
     ynh_script_progression --message="Verifying FUSE configuration..."

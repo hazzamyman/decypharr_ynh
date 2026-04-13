@@ -43,6 +43,16 @@ ram.runtime = "200M"
     help.en = "Streaming: mounts a virtual filesystem for direct playback (recommended for Plex/Jellyfin). Downloading: stores files locally without mounting."
     help.fr = "Diffusion: monte un système de fichiers virtuel pour la lecture directe (recommandé pour Plex/Jellyfin). Téléchargement: stocke les fichiers localement."
 
+    [install.cache_location]
+    ask.en = "Where should the file cache be stored?"
+    ask.fr = "Où le cache des fichiers doit-il être stocké ?"
+    type = "select"
+    choices = ["persistent", "temporary"]
+    default = "persistent"
+    visible = 'use_case == "streaming"'
+    help.en = "Persistent: stored on disk, survives reboots. Temporary: stored in /tmp, faster but cleared on reboot."
+    help.fr = "Persistant: stocké sur le disque, survit aux redémarrages. Temporaire: stocké dans /tmp, plus rapide mais effacé au redémarrage."
+
     [install.log_level]
     ask.en = "Log level"
     ask.fr = "Niveau de journalisation"
@@ -76,6 +86,7 @@ ram.runtime = "200M"
 
     [resources.data_dir]
     dir = "/var/lib/decypharr"
+    subdirs = ["downloads"]
 
     [resources.ports]
     main.default = 8282

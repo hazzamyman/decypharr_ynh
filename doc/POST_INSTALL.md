@@ -40,6 +40,15 @@ This installation is configured for: **__USE_CASE__**
 
 Change these settings in Decypharr → Settings → Mount.
 
+## Cache Settings
+
+**Cache Location**: `__CACHE_LOCATION__`
+
+- **Persistent** (`__DATA_DIR__/cache`): Cache survives reboots but uses disk space
+- **Temporary** (`/tmp/decypharr-cache`): Faster but cleared on reboot
+
+**Current Cache Directory**: `__CACHE_DIR__`
+
 ## Finding *arr API Keys
 
 Each *arr application has its own API key. To find it:

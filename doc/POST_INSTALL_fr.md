@@ -40,6 +40,15 @@ Cette installation est configurée pour : **__USE_CASE__**
 
 Modifiez ces paramètres dans Decypharr → Paramètres → Montage.
 
+## Paramètres du cache
+
+**Emplacement du cache** : `__CACHE_LOCATION__`
+
+- **Persistant** (`__DATA_DIR__/cache`) : Le cache survit aux redémarrages mais utilise de l'espace disque
+- **Temporaire** (`/tmp/decypharr-cache`) : Plus rapide mais effacé au redémarrage
+
+**Répertoire de cache actuel** : `__CACHE_DIR__`
+
 ## Trouver les clés API *arr
 
 Chaque application *arr a sa propre clé API. Pour la trouver :

@@ -13,8 +13,10 @@ chown "$app:$app" "$install_dir"
 chmod 755 "$install_dir"
 
 mkdir -p "$data_dir"
+mkdir -p "$data_dir/downloads"
 chown "$app:$app" "$data_dir"
 chmod 755 "$data_dir"
+chmod 755 "$data_dir/downloads"
 
 #=================================================
 # DOWNLOAD AND INSTALL THE APP BINARY
@@ -43,10 +45,15 @@ else
     dfs_cache_expiry="1h"
 fi
 
-# Set mount paths
+# Set mount and cache paths based on use case and cache location
 if [ "$mount_type" != "none" ]; then
     mount_path="/mnt/decypharr"
-    cache_dir="$data_dir/cache"
+    # Determine cache directory based on user preference
+    if [ "$cache_location" = "temporary" ]; then
+        cache_dir="/tmp/decypharr-cache"
+    else
+        cache_dir="$data_dir/cache"
+    fi
     # Clean up any stale mount before creating directory
     if mountpoint -q "$mount_path" 2>/dev/null; then
         fusermount -uz "$mount_path" 2>/dev/null || umount -l "$mount_path" 2>/dev/null || true
@@ -65,6 +72,7 @@ ynh_app_setting_set --app="$app" --key=mount_path --value="$mount_path"
 ynh_app_setting_set --app="$app" --key=cache_dir --value="$cache_dir"
 ynh_app_setting_set --app="$app" --key=mount_type --value="$mount_type"
 ynh_app_setting_set --app="$app" --key=use_case --value="$use_case"
+ynh_app_setting_set --app="$app" --key=cache_location --value="$cache_location"
 
 # Generate basic config (debrid provider configured via setup wizard)
 ynh_add_config --template="config.json" --destination="$data_dir/config.json"
@@ -208,6 +216,15 @@ This installation is configured for: **USE_CASE**
 
 Change these settings in Decypharr > Settings > Mount.
 
+## Cache Settings
+
+**Cache Location**: CACHE_LOCATION
+
+- **Persistent** (`__DATA_DIR__/cache`): Cache survives reboots but uses disk space
+- **Temporary** (`/tmp/decypharr-cache`): Faster but cleared on reboot
+
+**Current Cache Directory**: `CACHE_DIR`
+
 ## Finding *arr API Keys
 
 Each *arr application has its own API key. To find it:
@@ -231,6 +248,9 @@ sed -i "s|DIRECT_ARRS|${direct_arrs_table:-No *arr applications detected. Instal
 sed -i "s|RELATED_APPS|${related_apps_table:-No related applications detected.}|g" "$post_install_file"
 sed -i "s|USE_CASE|${use_case}|g" "$post_install_file"
 sed -i "s|PORT|${port}|g" "$post_install_file"
+sed -i "s|CACHE_LOCATION|${cache_location}|g" "$post_install_file"
+sed -i "s|CACHE_DIR|${cache_dir}|g" "$post_install_file"
+sed -i "s|__DATA_DIR__|${data_dir}|g" "$post_install_file"
 
 # Copy to install directory
 cp "$post_install_file" "$install_dir/POST_INSTALL.md"

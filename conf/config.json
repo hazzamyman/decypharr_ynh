@@ -9,6 +9,10 @@
   "password": "",
   "api_token": "",
   "debrids": [],
+  "qbittorrent": {
+    "download_folder": "__DATA_DIR__/downloads",
+    "categories": ["sonarr", "radarr", "lidarr", "readarr", "whisparr"]
+  },
   "mount": {
     "type": "__MOUNT_TYPE__",
     "mount_path": "__MOUNT_PATH__",
