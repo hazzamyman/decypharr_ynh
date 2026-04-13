@@ -30,6 +30,10 @@ ram.runtime = "200M"
     [install.domain]
     type = "domain"
 
+    [install.path]
+    type = "path"
+    default = "/decypharr"
+
     [install.init_main_permission]
     type = "group"
     default = "admins"
