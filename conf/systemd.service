@@ -1,6 +1,8 @@
 [Unit]
 Description=Decypharr - Debrid blackhole client
-After=network.target
+After=network-online.target systemd-udev-settle.service
+Wants=network-online.target
+Requires=/dev/fuse
 
 [Service]
 Type=simple
@@ -8,20 +10,24 @@ User=__APP__
 Group=__APP__
 WorkingDirectory=__INSTALL_DIR__
 ExecStart=__INSTALL_DIR__/decypharr --config __DATA_DIR__
-Restart=on-failure
-RestartSec=5
+Restart=always
+RestartSec=3
+KillSignal=SIGINT
 
+RuntimeDirectory=__APP__
 Environment="HOME=__DATA_DIR__"
+Environment="XDG_RUNTIME_DIR=/run/__APP__"
 
-# Required for FUSE mounting (dfs/rclone modes)
-AmbientCapabilities=CAP_SYS_ADMIN CAP_FSETID CAP_SETGID CAP_SETUID CAP_NET_ADMIN
-CapabilityBoundingSet=CAP_SYS_ADMIN CAP_FSETID CAP_SETGID CAP_SETUID CAP_NET_ADMIN
+# Required for FUSE mounting (DFS mode)
+AmbientCapabilities=CAP_SYS_ADMIN CAP_FSETID CAP_SETGID CAP_SETUID
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_FSETID CAP_SETGID CAP_SETUID
+SupplementaryGroups=fuse
+DeviceAllow=/dev/fuse rw
 MountFlags=shared
 
-# Security hardening - based on YunoHost example
+# Security hardening
 NoNewPrivileges=yes
 PrivateTmp=yes
-# Note: PrivateDevices is NOT set to allow access to /dev/fuse
 ProtectSystem=full
 ProtectControlGroups=yes
 ProtectKernelModules=yes
